@@ -6,7 +6,8 @@ Array.prototype.add = function (item) {
 Array.prototype.clear = function (keepalive) {
     var n = this.length;
     for (var i = n - 1; i >= 0; i--) {
-        delete this[i];
+        var tmp = this.pop();
+        tmp = null;
     }
 };
 
@@ -679,13 +680,22 @@ var fingers;
         }
         TouchedPattern.prototype.verify = function (acts, queue) {
             var rlt = acts.length == 1 && acts[0].act == "touchend" && queue.length > 0;
+            if (rlt) {
+            }
             return rlt;
         };
-        TouchedPattern.prototype.recognize = function (queue) {
+        TouchedPattern.prototype.recognize = function (queue, outq) {
             var prev = queue[1];
             if (prev && prev.length == 1) {
                 var act = prev[0];
-                if (act.act == "touchstart" || act.act == "touchmove") {
+                var drag = false;
+                if (outq != null && outq.length > 0) {
+                    var pact = outq[0];
+                    if (pact && (pact.act == "dragging" || pact.act == "dragstart")) {
+                        drag = true;
+                    }
+                }
+                if (!drag && (act.act == "touchstart" || act.act == "touchmove")) {
                     return {
                         act: "touched",
                         cpos: [act.cpos[0], act.cpos[1]],
@@ -701,14 +711,32 @@ var fingers;
         function DraggingPattern() {
         }
         DraggingPattern.prototype.verify = function (acts, queue) {
-            var rlt = acts.length == 1 && acts[0].act == "touchmove" && queue.length > 1;
+            var rlt = acts.length == 1
+                && acts[0].act == "touchmove"
+                && queue.length > 2;
+            if (rlt) {
+                rlt = false;
+                var s1 = queue[2];
+                var s2 = queue[1];
+                if (s1.length == 1 && s2.length == 1) {
+                    var a1 = s1[0];
+                    var a2 = s2[0];
+                    if (a1.act == "touchstart") {
+                    }
+                    if (a1.act == "touchstart" && a2.act == "touchmove") {
+                        rlt = true;
+                    }
+                    else if (a1.act == "touchmove" && a2.act == "touchmove") {
+                        rlt = true;
+                    }
+                }
+            }
             return rlt;
         };
         DraggingPattern.prototype.recognize = function (queue, outq) {
-            var prev = queue[1];
+            var prev = queue[2];
             if (prev.length == 1) {
                 var act = prev[0];
-                console.log(act.act);
                 if (act.act == "touchstart") {
                     return {
                         act: "dragstart",
@@ -750,6 +778,20 @@ var fingers;
             return null;
         };
         return DropPattern;
+    }());
+    var InvalidTouchPattern = (function () {
+        function InvalidTouchPattern() {
+        }
+        InvalidTouchPattern.prototype.verify = function (acts, queue) {
+            var rlt = acts.length == 1 && acts[0].act == "touchmove" && queue.length == 1;
+            return rlt;
+        };
+        InvalidTouchPattern.prototype.recognize = function (queue) {
+            console.dir(queue);
+            queue.clear();
+            return null;
+        };
+        return InvalidTouchPattern;
     }());
     fingers.Patterns.dragging = new DraggingPattern();
     fingers.Patterns.dropped = new DropPattern();
@@ -823,10 +865,10 @@ var fingers;
             if (!cfg || !cfg.enabled) {
                 return;
             }
-            rg.parse(acts);
             if (cfg.onact) {
                 cfg.onact(rg.inqueue);
             }
+            rg.parse(acts);
         }
         if (!inited) {
             document.oncontextmenu = function () {
