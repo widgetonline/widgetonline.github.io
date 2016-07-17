@@ -1018,7 +1018,7 @@ var fingers;
                 }, true);
                 document.addEventListener("touchend", function (event) {
                     var acts = [];
-                    var touches = getouches(event);
+                    var touches = getouches(event, true);
                     for (var i = 0; i < touches.length; i++) {
                         var item = event.changedTouches[i];
                         var act = createAct("touchend", item.clientX, item.clientY);
