@@ -821,7 +821,12 @@ var fingers;
         }
         ZoomStartPattern.prototype.verify = function (acts, queue, outq) {
             var rlt = acts.length == 2
-                && (acts[0].act == "touchstart" || acts[1].act == "touchstart");
+                && ((acts[0].act == "touchstart" || acts[1].act == "touchstart")
+                    || (outq.length > 0
+                        && acts[0].act == "touchmove"
+                        && acts[1].act == "touchmove"
+                        && outq[0].act != "zooming"
+                        && outq[0].act != "zoomstart"));
             return rlt;
         };
         ZoomStartPattern.prototype.recognize = function (queue, outq) {
