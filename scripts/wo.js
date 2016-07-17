@@ -918,8 +918,13 @@ var fingers;
     }(zoomsim));
     var zs = null;
     var os = null;
-    function getouches(event) {
-        return event.touches || event.changedTouches;
+    function getouches(event, isend) {
+        if (isend) {
+            return event.changedTouches;
+        }
+        else {
+            return event.touches;
+        }
     }
     function finger(cfg) {
         var rg = new fingers.Recognizer(cfg);
