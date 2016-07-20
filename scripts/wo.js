@@ -674,6 +674,152 @@ var wo;
 
 var fingers;
 (function (fingers) {
+    var Rot = (function () {
+        function Rot(el) {
+            if (!el) {
+                return;
+            }
+            this.target = el;
+            el.$rot$ = this;
+            var pos = [el.astyle(["left"]), el.astyle(["top"])];
+            el.style.left = pos[0];
+            el.style.top = pos[1];
+            var rc = el.getBoundingClientRect();
+            this.origin = {
+                center: [rc.width / 2, rc.height / 2],
+                angle: 0,
+                scale: [1, 1],
+                pos: [parseFloat(pos[0]), parseFloat(pos[1])],
+                size: [rc.width, rc.height]
+            };
+            this.cmt = {
+                center: [rc.width / 2, rc.height / 2],
+                angle: 0,
+                scale: [1, 1],
+                pos: [parseFloat(pos[0]), parseFloat(pos[1])],
+                size: [rc.width, rc.height]
+            };
+            this.cache = {
+                center: [rc.width / 2, rc.height / 2],
+                angle: 0,
+                scale: [1, 1],
+                pos: [parseFloat(pos[0]), parseFloat(pos[1])],
+                size: [rc.width, rc.height]
+            };
+            this.status = [];
+            this.center = document.createElement("div");
+            this.center.style.position = 'absolute';
+            this.center.style.left = '50%';
+            this.center.style.top = '50%';
+            this.center.style.width = '0px';
+            this.center.style.height = '0px';
+            this.center.style.border = 'solid 0px blue';
+            el.appendChild(this.center);
+            this.setOrigin(this.origin.center);
+            el.style.transform = "rotate(0deg)";
+            this.pushStatus();
+        }
+        Rot.prototype.rotate = function (arg, undef) {
+            if (!arg) {
+                return this;
+            }
+            var cache = this.cache;
+            var origin = this.cmt;
+            var offset = this.offset;
+            var angle = arg.angle, center = arg.center, scale = arg.scale, pos = arg.pos, resize = arg.resize;
+            if (!offset) {
+                offset = [0, 0];
+            }
+            if (center !== undef) {
+                this.pushStatus();
+                this.setOrigin(center);
+                var cstatus = this.pushStatus();
+                offset = this.correct(cstatus, offset);
+            }
+            if (angle || angle === 0) {
+                cache.angle = origin.angle + angle;
+                cache.angle = cache.angle % 360;
+            }
+            if (resize) {
+                cache.size = [origin.size[0] + resize[0], origin.size[1] + resize[1]];
+                if (cache.size[0] < 10) {
+                    cache.size[0] = 10;
+                }
+                if (cache.size[1] < 10) {
+                    cache.size[1] = 10;
+                }
+            }
+            if (scale) {
+                if (!(scale instanceof Array)) {
+                    var n = parseFloat(scale);
+                    scale = [n, n];
+                }
+                cache.scale = [origin.scale[0] * scale[0], origin.scale[1] * scale[1]];
+            }
+            if (pos) {
+                cache.pos = [origin.pos[0] + pos[0] - offset[0], origin.pos[1] + pos[1] - offset[1]];
+            }
+            this.target.style.transform = 'rotateZ(' + cache.angle + 'deg) scale(' + cache.scale[0] + ',' + cache.scale[1] + ')';
+            this.target.style.left = cache.pos[0] + 'px';
+            this.target.style.top = cache.pos[1] + 'px';
+            if (resize) {
+                this.target.style.width = cache.size[0] + 'px';
+                this.target.style.height = cache.size[1] + 'px';
+            }
+            this.pushStatus();
+            return this;
+        };
+        Rot.prototype.getCenter = function () {
+            var rc = this.center.getBoundingClientRect();
+            return [rc.left, rc.top];
+        };
+        Rot.prototype.setOrigin = function (p) {
+            this.target.style.transformOrigin = p[0] + "px " + p[1] + "px";
+        };
+        Rot.prototype.correct = function (status, poffset) {
+            if (!poffset) {
+                poffset = [0, 0];
+            }
+            var d = status.delta;
+            var x = parseFloat(this.target.astyle["left"]) - d.center[0];
+            var y = parseFloat(this.target.astyle["top"]) - d.center[1];
+            this.offset = [poffset[0] + d.center[0], poffset[1] + d.center[1]];
+            this.target.style.left = x + "px";
+            this.target.style.top = y + "px";
+            return this.offset;
+        };
+        Rot.prototype.commitStatus = function () {
+            this.cmt = this.cache;
+            this.cmt.pos = [parseFloat(this.target.style.left), parseFloat(this.target.style.top)];
+            this.cmt.size = [parseFloat(this.target.style.width), parseFloat(this.target.style.height)];
+            this.cache = { angle: 0, scale: [1, 1], pos: [0, 0], size: [0, 0] };
+            this.offset = [0, 0];
+        };
+        Rot.prototype.pushStatus = function () {
+            var c = this.getCenter();
+            var l = [parseFloat(this.target.astyle(["left"])), parseFloat(this.target.astyle(["top"]))];
+            var s = { center: [c[0], c[1]], pos: l };
+            var q = this.status;
+            var p = q.length > 0 ? q[q.length - 1] : s;
+            s.delta = { center: [s.center[0] - p.center[0], s.center[1] - p.center[1]],
+                pos: [s.pos[0] - p.pos[0], s.pos[1] - p.pos[1]] };
+            q[q.length] = s;
+            if (q.length > 6) {
+                q.splice(0, 1);
+            }
+            return s;
+        };
+        return Rot;
+    }());
+    function Rotator(el) {
+        var r = el.$rot$ || new Rot(el);
+        return r;
+    }
+    fingers.Rotator = Rotator;
+})(fingers || (fingers = {}));
+
+var fingers;
+(function (fingers) {
     fingers.Patterns = {};
     var TouchedPattern = (function () {
         function TouchedPattern() {
@@ -967,11 +1113,17 @@ var fingers;
             if (this.inqueue.length > this.cfg.qlen) {
                 this.inqueue.splice(this.inqueue.length - 1, 1);
             }
-            if (acts.length == 1 && acts[0].act == "touchstart" && this.cfg.on && this.cfg.on.tap) {
-                this.cfg.on.tap(acts[0]);
+            if (this.cfg.on && this.cfg.on.tap) {
+                for (var _i = 0, acts_1 = acts; _i < acts_1.length; _i++) {
+                    var i = acts_1[_i];
+                    if (i.act == "touchstart") {
+                        this.cfg.on.tap(acts[0]);
+                        break;
+                    }
+                }
             }
-            for (var _i = 0, _a = this.patterns; _i < _a.length; _i++) {
-                var pattern = _a[_i];
+            for (var _a = 0, _b = this.patterns; _a < _b.length; _a++) {
+                var pattern = _b[_a];
                 if (pattern.verify(acts, this.inqueue, this.outqueue)) {
                     var rlt = pattern.recognize(this.inqueue, this.outqueue);
                     if (rlt) {
@@ -1155,60 +1307,6 @@ var fingers;
     }
     fingers.touch = touch;
 })(fingers || (fingers = {}));
-function simulate(element, eventName, pos) {
-    function extend(destination, source) {
-        for (var property in source)
-            destination[property] = source[property];
-        return destination;
-    }
-    var eventMatchers = {
-        'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,
-        'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
-    };
-    var defaultOptions = {
-        pointerX: 100,
-        pointerY: 100,
-        button: 0,
-        ctrlKey: false,
-        altKey: false,
-        shiftKey: false,
-        metaKey: false,
-        bubbles: true,
-        cancelable: true
-    };
-    if (pos) {
-        defaultOptions.pointerX = pos[0];
-        defaultOptions.pointerY = pos[1];
-    }
-    var options = extend(defaultOptions, arguments[3] || {});
-    var oEvent, eventType = null;
-    for (var name_1 in eventMatchers) {
-        if (eventMatchers[name_1].test(eventName)) {
-            eventType = name_1;
-            break;
-        }
-    }
-    if (!eventType)
-        throw new SyntaxError('Only HTMLEvents and MouseEvents interfaces are supported');
-    if (document.createEvent) {
-        oEvent = document.createEvent(eventType);
-        if (eventType == 'HTMLEvents') {
-            oEvent.initEvent(eventName, options.bubbles, options.cancelable);
-        }
-        else {
-            oEvent.initMouseEvent(eventName, options.bubbles, options.cancelable, document.defaultView, options.button, options.pointerX, options.pointerY, options.pointerX, options.pointerY, options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
-        }
-        element.dispatchEvent(oEvent);
-    }
-    else {
-        options.clientX = options.pointerX;
-        options.clientY = options.pointerY;
-        var evt = document.createEventObject();
-        oEvent = extend(evt, options);
-        element.fireEvent('on' + eventName, oEvent);
-    }
-    return element;
-}
 var touch = fingers.touch;
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1259,6 +1357,15 @@ var fingers;
         return Drag;
     }(Zoomer));
     fingers.Drag = Drag;
+    function pointOnElement(el, evt, pos) {
+        var rlt = [0, 0];
+        el.onmouseover = function (event) {
+            rlt = [event.offsetX, event.offsetY];
+        };
+        simulate(el, "mouseover", pos);
+        return rlt;
+    }
+    fingers.pointOnElement = pointOnElement;
     var Zoom = (function (_super) {
         __extends(Zoom, _super);
         function Zoom(el) {
@@ -1269,6 +1376,7 @@ var fingers;
                     zoomer.sact = act;
                     zoomer.pact = act;
                     zoomer.started = true;
+                    zoomer.rot = fingers.Rotator(el);
                 }, zooming: function (act, el) {
                     if (zoomer.started) {
                         var p = zoomer.sact;
@@ -1276,11 +1384,18 @@ var fingers;
                         var rot = act.angle - p.angle;
                         var scale = act.len / p.len;
                         var delta = { offset: offset, angle: rot, scale: scale };
+                        var center = pointOnElement(el, "mouseover", act.cpos);
+                        zoomer.rot.rotate({
+                            pos: offset,
+                            angle: rot,
+                            center: center,
+                            scale: scale
+                        });
                         zoomer.pact = act;
-                        console.dir(delta);
                     }
                 }, zoomend: function (act, el) {
                     zoomer.started = false;
+                    zoomer.rot.commitStatus();
                 }
             };
         }
@@ -1321,6 +1436,60 @@ var fingers;
         return Zsize;
     }(Zoomer));
     fingers.Zsize = Zsize;
+    function simulate(element, eventName, pos) {
+        function extend(destination, source) {
+            for (var property in source)
+                destination[property] = source[property];
+            return destination;
+        }
+        var eventMatchers = {
+            'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,
+            'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
+        };
+        var defaultOptions = {
+            pointerX: 100,
+            pointerY: 100,
+            button: 0,
+            ctrlKey: false,
+            altKey: false,
+            shiftKey: false,
+            metaKey: false,
+            bubbles: true,
+            cancelable: true
+        };
+        if (pos) {
+            defaultOptions.pointerX = pos[0];
+            defaultOptions.pointerY = pos[1];
+        }
+        var options = extend(defaultOptions, arguments[3] || {});
+        var oEvent, eventType = null;
+        for (var name_1 in eventMatchers) {
+            if (eventMatchers[name_1].test(eventName)) {
+                eventType = name_1;
+                break;
+            }
+        }
+        if (!eventType)
+            throw new SyntaxError('Only HTMLEvents and MouseEvents interfaces are supported');
+        if (document.createEvent) {
+            oEvent = document.createEvent(eventType);
+            if (eventType == 'HTMLEvents') {
+                oEvent.initEvent(eventName, options.bubbles, options.cancelable);
+            }
+            else {
+                oEvent.initMouseEvent(eventName, options.bubbles, options.cancelable, document.defaultView, options.button, options.pointerX, options.pointerY, options.pointerX, options.pointerY, options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
+            }
+            element.dispatchEvent(oEvent);
+        }
+        else {
+            options.clientX = options.pointerX;
+            options.clientY = options.pointerY;
+            var evt = document.createEventObject();
+            oEvent = extend(evt, options);
+            element.fireEvent('on' + eventName, oEvent);
+        }
+        return element;
+    }
 })(fingers || (fingers = {}));
 
 var fingers;
