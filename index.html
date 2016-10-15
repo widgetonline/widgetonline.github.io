@@ -1,4 +1,16 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"><title>Home Page</title><link rel="stylesheet" href="themes/wo/wo.css"><link rel="stylesheet" href="themes/lib/bootstrap.css"><script src="scripts/jquery-min.js"></script><script src="scripts/velocity-min.js"></script><script src="scripts/wo-min.js"></script><script type="text/javascript">$(function(){
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<title>Home Page</title>
+<link rel="stylesheet" href="themes/wo/wo.css">
+<link rel="stylesheet" href="themes/lib/bootstrap.css">
+<script src="scripts/jquery-min.js"></script>
+<script src="scripts/velocity-min.js"></script>
+<script src="scripts/wo-min.js"></script>
+<script type="text/javascript">
+$(function(){
     document.body.setAttribute("test", "ok");
     var w = new wo.monitor();
     w.observe(document.body, 'test', function(v, ov){
@@ -94,4 +106,23 @@
         
     });
     console.log("index end");
-});</script></head><body class="wo basic"><div><div class="container-fluid basic"><div class="row"><div class="col-xs-12 col-sm-4"><button id="bpri" class="primary large fill-x">Primary</button></div><div class="col-xs-12 col-sm-4"><div id="bdef" class="wbtn large fill-x">Default</div></div><div class="col-xs-12 col-sm-4"><button id="bdsb" class="large disabled fill-x">Disabled</button></div></div><div class="row"><div id="rc" class="col-xs-12 col-sm-6"></div><div id="pc" class="col-xs-12 col-sm-6"></div></div></div></div></body></html>
+});</script>
+</head>
+<body class="wo basic">
+<div>
+<div class="container-fluid basic">
+<div class="row"><div class="col-xs-12 col-sm-4">
+<button id="bpri" class="primary large fill-x">Primary</button>
+</div><div class="col-xs-12 col-sm-4">
+<div id="bdef" class="wbtn large fill-x">Default</div>
+</div>
+<div class="col-xs-12 col-sm-4">
+<button id="bdsb" class="large disabled fill-x">Disabled</button>
+</div></div><div class="row">
+<div id="rc" class="col-xs-12 col-sm-6">
+</div><div id="pc" class="col-xs-12 col-sm-6"></div>
+</div>
+</div>
+</div>
+</body>
+</html>
