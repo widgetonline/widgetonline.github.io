@@ -59,7 +59,7 @@
                 finger('#dzooming').zoomable().draggable();
                 finger('#dsizing').zsizable().draggable();
                 finger('#ddragging').draggable();
-                finger('#dropzone').droppable(function(target){
+                finger('#dropzone, #dragzone').droppable(function(target){
                     this.appendChild(target);
                 });
                 finger('#stdrag').draggable().on("dragstart", function(act, el){
@@ -76,7 +76,7 @@
         <div id="dsizing" class="tile abs noselect pos-1-2">Sizing</div>
         <div id="ddragging" class="tile abs noselect pos-1-3">Dragging</div>
         <div class="row" style="margin-top:100px;">
-            <div class="region col-phone-p-4">
+            <div id='dragzone' class="region col-phone-p-4">
                 <div id="stdrag" class="tile noselect">Static</div>
             </div>
             <div id='dropzone' class="region col-phone-p-4 skip-phone-p-4">
