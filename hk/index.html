@@ -5,7 +5,7 @@
         <script>
             function init(){
                 if (window.android){
-                    android.toast("Success");
+                    document.body.innerHTML = android.toast("Success");
                 }else{
                     document.write("No android detected");
                 }
