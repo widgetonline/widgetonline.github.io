@@ -5,10 +5,13 @@
         <script>
             function init(){
                 if (window.android){
-                    document.body.innerHTML = android.toast("Success");
+                    document.body.innerHTML += android.toast("Success") + "<br/>";
                 }else{
                     document.write("No android detected");
                 }
+            }
+            function jsfun(a,b){
+                document.body.innerHTML += "From android:" + a + "," + b;
             }
         </script>
     </head>
