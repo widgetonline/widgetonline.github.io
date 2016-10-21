@@ -2,6 +2,15 @@
 <html>
     <head>
         <title>API Testing</title>
+        <style>
+            #qrcode {
+                width:160px;
+                height:160px;
+                margin:15px auto;
+            }
+        </style>
+        <script src="qrcode.min.js"></script>
+
         <script>
             function init(){
                 if (window.android){
@@ -22,6 +31,14 @@
             function fingerback(o){
                 document.body.innerHTML += "FingerBack:" + o;
             }
+            function genqr(){
+                var qid = "qrcode";
+                var did = "qrdata";
+                var qrcode = new QRCode(qid);
+                var input = document.getElementById(did);
+                var data = input.value;
+                qrcode.makeCode(data);
+            }
         </script>
         
     </head>
@@ -29,5 +46,8 @@
         <button onclick="goWeChat();">WeChat</button>
         <br/>
         <button onclick="finger();">Finger Auth</button>
+        <input id="qrdata" type="text" value="Qr Code Test" />
+        <div id="qrcode">
+        </div>
     </body>
 </html>
