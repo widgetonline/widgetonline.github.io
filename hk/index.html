@@ -16,6 +16,12 @@
             function goWeChat(){
                 android.wechatScan();
             }
+            function finger(){
+                document.body.innerHTML += android.finger() + "<br/>";
+            }
+            function fingerback(o){
+                document.body.innerHTML += "FingerBack:" + o;
+            }
         </script>
         
     </head>
