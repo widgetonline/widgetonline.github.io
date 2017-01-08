@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <head>
+        <title>Foundation Testing</title>
+        <link rel="stylesheet" type="text/css" href="svg-symbols.css" />
+        <link rel="stylesheet" type="text/css" href="wo.css" />
+        <script src="vendors.js"></script>
+        <script src="foundation.js"></script>
+        <style>
+            .hidden{
+                display:none;
+            }
+        </style>
+    </head>
+    <body class="wo nb">
+        <!-- 
+          - Data bind
+          - Directive For, Show
+          - Dynamic rendering
+          - Transclude
+          - Json widget builder
+            Data validation
+            Router
+         -->        
+        <div id="container">
+            <w.card #cardw>
+                <h3 _="title">Connection Settings</h3>
+                <div _="body">
+                    <w.combo #cba $editors$ [label]="IP Address:" [allowInput]=false />
+                </div>
+                <div _="buttons">
+                    <w.buttongroup [data]="{['Button A','Button B']}" />
+                </div>
+            </w.card>
+            <w.card #card class="wo-large-title col-phone-p-12 col-tablet-p-6 skip-tablet-p-3 col-desktop-l-4 skip-desktop-l-4">
+                <h3 _="title">Connection Settings</h3>
+                <div _="body" class="wo-fluid-desktop">
+                    <w.combo #cba $editors$ [label]="IP Address:" [allowInput]=false />
+                </div>
+                <div _="buttons">
+                    <w.buttongroup [data]="{[{text:'Button A', click:clickHandler },'Button B','Button C']}"/>
+                </div>
+            </w.card>
+        </div>
+        <script>
+            function clickHandler(event){
+                var u = this.$unit('card');
+                console.log(u.tagName);
+            }
+            wo(function(){
+                wo(document.body).transpile();
+                document.body.$card.$cba.bind({
+                    text:"Select an IP address", 
+                    items:['192.168.1.7', '192.168.1.9', '127.0.0.1']
+                });
+                document.body.$cardw.$cba.bind({
+                    text:"Select an IP address", 
+                    items:['192.168.1.7', '192.168.1.9', '127.0.0.1']
+                });
+                document.body.refreshAll();
+                // var area = document.getElementById('container');
+                // var json = {tag:"w.combo", "[label]":"Label Text", "[allowInput]":false};
+                // wo(json).transpile().result(function(el){
+                //     el.allowInput = true;
+                //     el.bind({text:"Combol Text", items:['Item 1', 'Item 2', 'Item 3']})
+                // }).appendTo(area);
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <head>
+        <title>Foundation Testing</title>
+        <link rel="stylesheet" type="text/css" href="svg-symbols.css" />
+        <link rel="stylesheet" type="text/css" href="wo.css" />
+        <script src="vendors.js"></script>
+        <script src="foundation.js"></script>
+        <style>
+            #container{
+                position:fixed;
+                left:0;
+                right:0;
+                bottom:12px;
+                z-index:1000;
+            }
+            .wo-watermark{
+                color:rgba(0, 0, 0, 0.2);
+                text-align: center;
+            }
+            .logo{
+                position: fixed;
+                top:25%;
+                left:10%;
+                right:0;
+                height:100px;
+                width:80%;
+            }
+            .logo svg{
+                /*color:black;
+                fill:black;
+                stroke:black;
+                stroke-width:2px;*/
+            }
+        </style>
+    </head>
+    <body class="wo nb">
+        <!-- 
+          - Data bind
+          - Directive For, Show
+          - Dynamic rendering
+          - Transclude
+          - Json widget builder
+            Data validation
+            Router
+         -->
+        <div class="logo wo-watermark">
+            <svg class="icon-mouse" viewBox="0 0 210.601 210.601">
+                <use #toggleicon xlink:href="svg-symbols.svg#icon-mouse" />
+            </svg>
+        </div>
+        <div id="container">
+            <w.card #card class="wo-large-title col-phone-p-12 col-tablet-p-6 skip-tablet-p-3 col-desktop-l-4 skip-desktop-l-4">
+                <h3 _="title">Connection Settings</h3>
+                <div _="body" class="wo-fluid-desktop">
+                    <w.combo #cba $editors$ [label]="IP Address:" [allowinput]=true />
+                </div>
+                <div _="buttons">
+                    <w.buttongroup #btns />
+                </div>
+            </w.card>
+            <w.card #cardcn class="wo-large-title wo-hidden col-phone-p-12 col-tablet-p-6 skip-tablet-p-3 col-desktop-l-4 skip-desktop-l-4">
+                <h3 _="title">{unit.address}</h3>
+                <div _="body" class="wo-text-center">Connecting, please wait ...</div>
+                <div _="buttons">
+                    <w.buttongroup #btns />
+                </div>
+            </w.card>
+        </div>
+        <script>
+            function clickHandler(event){
+                var cn = document.body.$cardcn;
+                var u = this.$unit('card')
+                var c = u.$cba;
+                u.display(true);
+                cn.address = c.data.text;
+                cn.refreshAll();
+                cn.display();
+                console.log(c.peek());
+            }
+            function cancelHandler(event){
+                var cn = document.body.$cardcn;
+                var u = document.body.$card;
+                cn.display(true);
+                u.display();
+            }
+            wo(function(){
+                wo(document.body).transpile();
+                document.body.$card.$cba.bind({
+                    text:"Select an IP address", 
+                    items:['192.168.1.5', '192.168.1.9', '127.0.0.1']
+                });
+                document.body.$card.$btns.data = [{text:'Connect', click:clickHandler }];
+                document.body.$cardcn.$btns.data = [{text:'Cancel', click:cancelHandler }];
+                document.body.refreshAll();
+
+            });
+        </script>
+    </body>
+</html>
